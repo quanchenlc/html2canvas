@@ -4,6 +4,7 @@ import {Bounds, parseBounds} from '../css/layout/bounds';
 import {isHTMLElementNode} from './node-parser';
 import {Context} from '../core/context';
 import {DebuggerType, isDebugging} from '../core/debugger';
+import { naviteGetComputedStyle } from '../nativeGetComputeStyle';
 
 export const enum FLAGS {
     CREATES_STACKING_CONTEXT = 1 << 1,
@@ -24,7 +25,7 @@ export class ElementContainer {
             debugger;
         }
 
-        this.styles = new CSSParsedDeclaration(context, window.getComputedStyle(element, null));
+        this.styles = new CSSParsedDeclaration(context, naviteGetComputedStyle(element, null));
 
         if (isHTMLElementNode(element)) {
             if (this.styles.animationDuration.some((duration) => duration > 0)) {

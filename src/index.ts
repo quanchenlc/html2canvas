@@ -6,11 +6,14 @@ import {CacheStorage} from './core/cache-storage';
 import {CanvasRenderer, RenderConfigurations, RenderOptions} from './render/canvas/canvas-renderer';
 import {ForeignObjectRenderer} from './render/canvas/foreignobject-renderer';
 import {Context, ContextOptions} from './core/context';
+import {naviteGetComputedStyle} from './nativeGetComputeStyle';
+import {AdpatQQAvatarOptions, adpatQQAvatar} from './adaptQQAvatar/adpat-QQ-avatar';
 
 export type Options = CloneOptions &
     WindowOptions &
     RenderOptions &
-    ContextOptions & {
+    ContextOptions &
+    AdpatQQAvatarOptions & {
         backgroundColor: string | null;
         foreignObjectRendering: boolean;
         removeContainer?: boolean;
@@ -46,8 +49,14 @@ const renderElement = async (element: HTMLElement, opts: Partial<Options>): Prom
         allowTaint: opts.allowTaint ?? false,
         imageTimeout: opts.imageTimeout ?? 15000,
         proxy: opts.proxy,
-        useCORS: opts.useCORS ?? false
+        useCORS: opts.useCORS ?? false,
+        adpatQQAvatar: opts.adpatQQAvatar ?? false
     };
+
+    // adpat qq avatr; 
+    if(resourceOptions.adpatQQAvatar){
+      await adpatQQAvatar(element);
+    }
 
     const contextOptions = {
         logging: opts.logging ?? true,
@@ -112,6 +121,8 @@ const renderElement = async (element: HTMLElement, opts: Partial<Options>): Prom
         height: opts.height ?? Math.ceil(height)
     };
 
+    
+
     let canvas;
 
     if (foreignObjectRendering) {
@@ -152,10 +163,10 @@ const parseBackgroundColor = (context: Context, element: HTMLElement, background
     const ownerDocument = element.ownerDocument;
     // http://www.w3.org/TR/css3-background/#special-backgrounds
     const documentBackgroundColor = ownerDocument.documentElement
-        ? parseColor(context, getComputedStyle(ownerDocument.documentElement).backgroundColor as string)
+        ? parseColor(context, naviteGetComputedStyle(ownerDocument.documentElement).backgroundColor as string)
         : COLORS.TRANSPARENT;
     const bodyBackgroundColor = ownerDocument.body
-        ? parseColor(context, getComputedStyle(ownerDocument.body).backgroundColor as string)
+        ? parseColor(context, naviteGetComputedStyle(ownerDocument.body).backgroundColor as string)
         : COLORS.TRANSPARENT;
 
     const defaultBackgroundColor =

@@ -24,6 +24,7 @@ import {CSSParsedCounterDeclaration, CSSParsedPseudoDeclaration} from '../css/in
 import {getQuote} from '../css/property-descriptors/quotes';
 import {Context} from '../core/context';
 import {DebuggerType, isDebugging} from '../core/debugger';
+import { naviteGetComputedStyle } from '../nativeGetComputeStyle';
 
 export interface CloneOptions {
     ignoreElements?: (element: Element) => boolean;
@@ -318,9 +319,9 @@ export class DocumentCloner {
             const clone = this.createElementClone(node);
             clone.style.transitionProperty = 'none';
 
-            const style = window.getComputedStyle(node);
-            const styleBefore = window.getComputedStyle(node, ':before');
-            const styleAfter = window.getComputedStyle(node, ':after');
+            const style = naviteGetComputedStyle(node);
+            const styleBefore = naviteGetComputedStyle(node, ':before');
+            const styleAfter = naviteGetComputedStyle(node, ':after');
 
             if (this.referenceElement === node && isHTMLElementNode(clone)) {
                 this.clonedReferenceElement = clone;
