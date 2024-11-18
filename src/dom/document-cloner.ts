@@ -42,6 +42,7 @@ export interface WindowOptions {
 export type CloneConfigurations = CloneOptions & {
     inlineImages: boolean;
     copyStyles: boolean;
+    adpatQQAvatar: boolean;
 };
 
 const IGNORE_ATTRIBUTE = 'data-html2canvas-ignore';
@@ -156,10 +157,17 @@ export class DocumentCloner {
 
         const clone = node.cloneNode(false) as T;
         if (isImageElement(clone)) {
+
+            if (this.options.adpatQQAvatar) {
+              
+            }
+
             if (isImageElement(node) && node.currentSrc && node.currentSrc !== node.src) {
                 clone.src = node.currentSrc;
                 clone.srcset = '';
             }
+
+            console.log('src:',clone.src)
 
             if (clone.loading === 'lazy') {
                 clone.loading = 'eager';

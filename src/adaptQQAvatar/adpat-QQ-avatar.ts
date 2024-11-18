@@ -39,15 +39,19 @@ async function transformSrc(src: string): Promise<string> {
 function mqqGetUrlImage(url: string) {
     // @ts-ignore;
     const mqq: any = window.mqq;
-    if (!mqq) throw new Error('mqq is not defined');
+    if (!mqq) {
+        console.error('mqq is not defined');
+        return Promise.resolve(url);
+    }
     return new Promise((resolve) => {
         const callid = 'shareImg';
         mqq.data.getUrlImage(
             {
                 callid,
-                url
+                url: url + '23123'
             },
             (data: any) => {
+                console.log('mqq.data.getUrlImage:', data);
                 if (data.ret == 0 && data.response && data.response.callid == callid) {
                     var base64 = data.response.data;
                     // mqq.iOS &&
@@ -56,6 +60,7 @@ function mqqGetUrlImage(url: string) {
                     resolve(base64);
                     //IOS里面不支持png与jpeg，如果是canvas导出的图片，将jpeg替换成jpg
                 } else {
+                    resolve(url);
                 }
             }
         );

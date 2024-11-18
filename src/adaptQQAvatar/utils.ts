@@ -10,4 +10,12 @@ function findAllTags(element: any, tagName = 'img') {
     return result;
 }
 
-export {findAllTags};
+function awaitTime(seconds: number) {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            resolve(true);
+        }, seconds * 1000);
+    });
+}
+
+export {findAllTags, awaitTime};

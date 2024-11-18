@@ -61,6 +61,7 @@ export class Cache {
     }
 
     private async loadImage(key: string) {
+        console.log('loadImage key:', key);
         const isSameOrigin = CacheStorage.isSameOrigin(key);
         const useCORS =
             !isInlineImage(key) && this._options.useCORS === true && FEATURES.SUPPORT_CORS_IMAGES && !isSameOrigin;

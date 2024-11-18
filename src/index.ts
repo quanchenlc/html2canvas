@@ -49,14 +49,8 @@ const renderElement = async (element: HTMLElement, opts: Partial<Options>): Prom
         allowTaint: opts.allowTaint ?? false,
         imageTimeout: opts.imageTimeout ?? 15000,
         proxy: opts.proxy,
-        useCORS: opts.useCORS ?? false,
-        adpatQQAvatar: opts.adpatQQAvatar ?? false
+        useCORS: opts.useCORS ?? false
     };
-
-    // adpat qq avatr; 
-    if(resourceOptions.adpatQQAvatar){
-      await adpatQQAvatar(element);
-    }
 
     const contextOptions = {
         logging: opts.logging ?? true,
@@ -87,7 +81,8 @@ const renderElement = async (element: HTMLElement, opts: Partial<Options>): Prom
         onclone: opts.onclone,
         ignoreElements: opts.ignoreElements,
         inlineImages: foreignObjectRendering,
-        copyStyles: foreignObjectRendering
+        copyStyles: foreignObjectRendering,
+        adpatQQAvatar: opts.adpatQQAvatar ?? false
     };
 
     context.logger.debug(
@@ -98,6 +93,13 @@ const renderElement = async (element: HTMLElement, opts: Partial<Options>): Prom
 
     const documentCloner = new DocumentCloner(context, element, cloneOptions);
     const clonedElement = documentCloner.clonedReferenceElement;
+
+    // adpat qq avatr;
+    if (cloneOptions.adpatQQAvatar) {
+        const dom = clonedElement?.children[1];
+        if (dom) await adpatQQAvatar(dom as HTMLElement);
+    }
+
     if (!clonedElement) {
         return Promise.reject(`Unable to find element in cloned iframe`);
     }
@@ -120,8 +122,6 @@ const renderElement = async (element: HTMLElement, opts: Partial<Options>): Prom
         width: opts.width ?? Math.ceil(width),
         height: opts.height ?? Math.ceil(height)
     };
-
-    
 
     let canvas;
 
