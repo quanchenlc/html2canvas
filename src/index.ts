@@ -24,7 +24,11 @@ const html2canvas = (
     elementOrSelector: HTMLElement | string,
     options: Partial<Options> = {}
 ): Promise<HTMLCanvasElement> => {
-    return renderElement(elementOrSelector, options);
+    return new Promise((resolve) => {
+        setTimeout(resolve,0);
+    }).then(() => {
+        return renderElement(elementOrSelector, options);
+    });
 };
 
 export default html2canvas;
@@ -95,7 +99,7 @@ const renderElement = async (
         adpatQQAvatar: opts.adpatQQAvatar ?? false,
         cacheDocumentElement: opts.cacheDocumentElement ?? true
     };
-    
+
     context.logger.debug(
         `Starting document clone with size ${windowBounds.width}x${
             windowBounds.height
