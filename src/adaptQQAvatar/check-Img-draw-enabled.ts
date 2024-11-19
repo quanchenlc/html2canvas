@@ -19,7 +19,7 @@ function checkImgDrawEnabled(src: string): Promise<boolean> {
     return new Promise((resolve) => {
         const img = getImage();
         img.onload = () => {
-            console.log('onload', img.width, img.height);
+            // console.log('onload', img.width, img.height);
             const canvas = getCanvas();
             canvas.width = img.width;
             canvas.height = img.height;
@@ -27,10 +27,10 @@ function checkImgDrawEnabled(src: string): Promise<boolean> {
             try {
                 cxt?.drawImage(img, 0, 0);
                 // const dataURL = canvas.toDataURL('image/jpeg', 0.1);
-                console.log('canvas can draw and toDataURL');
+                // console.log('canvas can draw and toDataURL');
                 resolve(true);
             } catch (error) {
-                console.log('on canvas toDataURL:', error);
+                // console.log('on canvas toDataURL:', error);
                 resolve(false);
             }
         };

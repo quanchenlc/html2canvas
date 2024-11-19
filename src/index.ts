@@ -19,8 +19,11 @@ export type Options = CloneOptions &
         removeContainer?: boolean;
     };
 
-const html2canvas = (element: HTMLElement, options: Partial<Options> = {}): Promise<HTMLCanvasElement> => {
-    return renderElement(element, options);
+const html2canvas = (
+    elementOrSelector: HTMLElement | string,
+    options: Partial<Options> = {}
+): Promise<HTMLCanvasElement> => {
+    return renderElement(elementOrSelector, options);
 };
 
 export default html2canvas;
@@ -29,10 +32,16 @@ if (typeof window !== 'undefined') {
     CacheStorage.setContext(window);
 }
 
-const renderElement = async (element: HTMLElement, opts: Partial<Options>): Promise<HTMLCanvasElement> => {
-    if (!element || typeof element !== 'object') {
+const renderElement = async (
+    elementOrSelector: HTMLElement | string,
+    opts: Partial<Options>
+): Promise<HTMLCanvasElement> => {
+    if (!elementOrSelector || !(typeof elementOrSelector === 'object' || typeof elementOrSelector === 'string')) {
         return Promise.reject('Invalid element provided as first argument');
     }
+    const element = (
+        typeof elementOrSelector === 'object' ? elementOrSelector : document.querySelector(elementOrSelector)
+    ) as HTMLElement;
     const ownerDocument = element.ownerDocument;
 
     if (!ownerDocument) {
@@ -91,7 +100,7 @@ const renderElement = async (element: HTMLElement, opts: Partial<Options>): Prom
         } scrolled to ${-windowBounds.left},${-windowBounds.top}`
     );
 
-    const documentCloner = new DocumentCloner(context, element, cloneOptions);
+    const documentCloner = new DocumentCloner(context, elementOrSelector, cloneOptions);
     const clonedElement = documentCloner.clonedReferenceElement;
 
     // adpat qq avatr;
@@ -103,9 +112,9 @@ const renderElement = async (element: HTMLElement, opts: Partial<Options>): Prom
     if (!clonedElement) {
         return Promise.reject(`Unable to find element in cloned iframe`);
     }
-
+    
+    
     const container = await documentCloner.toIFrame(ownerDocument, windowBounds);
-
     const {width, height, left, top} =
         isBodyElement(clonedElement) || isHTMLElement(clonedElement)
             ? parseDocumentSize(clonedElement.ownerDocument)

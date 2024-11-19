@@ -48,10 +48,10 @@ function mqqGetUrlImage(url: string) {
         mqq.data.getUrlImage(
             {
                 callid,
-                url: url + '23123'
+                url
             },
             (data: any) => {
-                console.log('mqq.data.getUrlImage:', data);
+                // console.log('mqq.data.getUrlImage:', data);
                 if (data.ret == 0 && data.response && data.response.callid == callid) {
                     var base64 = data.response.data;
                     // mqq.iOS &&

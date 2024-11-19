@@ -24,7 +24,7 @@ import {CSSParsedCounterDeclaration, CSSParsedPseudoDeclaration} from '../css/in
 import {getQuote} from '../css/property-descriptors/quotes';
 import {Context} from '../core/context';
 import {DebuggerType, isDebugging} from '../core/debugger';
-import { naviteGetComputedStyle } from '../nativeGetComputeStyle';
+import {naviteGetComputedStyle} from '../nativeGetComputeStyle';
 
 export interface CloneOptions {
     ignoreElements?: (element: Element) => boolean;
@@ -47,6 +47,10 @@ export type CloneConfigurations = CloneOptions & {
 
 const IGNORE_ATTRIBUTE = 'data-html2canvas-ignore';
 
+let DocumentElementCache: HTMLElement | null = null;
+// let IFrameCache: HTMLIFrameElement | null = null;
+// const CountersInstance: CounterState = new CounterState();
+
 export class DocumentCloner {
     private readonly scrolledElements: [Element, number, number][];
     private readonly referenceElement: HTMLElement;
@@ -57,21 +61,40 @@ export class DocumentCloner {
 
     constructor(
         private readonly context: Context,
-        element: HTMLElement,
+        elementOrSelector: HTMLElement | string,
         private readonly options: CloneConfigurations
     ) {
+        const element = (
+            typeof elementOrSelector === 'object' ? elementOrSelector : document.querySelector(elementOrSelector)
+        ) as HTMLElement;
         this.scrolledElements = [];
         this.referenceElement = element;
         this.counters = new CounterState();
+        // this.counters = CountersInstance;
         this.quoteDepth = 0;
         if (!element.ownerDocument) {
             throw new Error('Cloned element does not have an owner document');
         }
 
-        this.documentElement = this.cloneNode(element.ownerDocument.documentElement, false) as HTMLElement;
+        // 可以缓存clone对象；
+        if (typeof elementOrSelector === 'string') {
+            if (!DocumentElementCache) {
+                this.documentElement = this.cloneNode(element.ownerDocument.documentElement, false) as HTMLElement;
+                DocumentElementCache = this.documentElement as HTMLElement;
+            } else {
+                this.documentElement = DocumentElementCache.cloneNode(true) as HTMLElement;
+            }
+            // find clone node;
+            this.clonedReferenceElement = this.documentElement.querySelector(elementOrSelector) as HTMLElement;
+            // console.log('this.clonedReferenceElement:', this.clonedReferenceElement);
+        } else {
+            this.documentElement = this.cloneNode(element.ownerDocument.documentElement, false) as HTMLElement;
+        }
     }
 
     toIFrame(ownerDocument: Document, windowSize: Bounds): Promise<HTMLIFrameElement> {
+        // if(IFrameCache) return Promise.resolve(IFrameCache);
+
         const iframe: HTMLIFrameElement = createIFrameContainer(ownerDocument, windowSize);
 
         if (!iframe.contentWindow) {
@@ -87,7 +110,7 @@ export class DocumentCloner {
         /* Chrome doesn't detect relative background-images assigned in inline <style> sheets when fetched through getComputedStyle
          if window url is about:blank, we can assign the url to current by writing onto the document
          */
-
+        // console.log('iframe:', iframe);
         const iframeLoad = iframeLoader(iframe).then(async () => {
             this.scrolledElements.forEach(restoreNodeScroll);
             if (cloneWindow) {
@@ -127,7 +150,7 @@ export class DocumentCloner {
                     .then(() => onclone(documentClone, referenceElement))
                     .then(() => iframe);
             }
-
+            // IFrameCache = iframe;
             return iframe;
         });
 
@@ -137,7 +160,6 @@ export class DocumentCloner {
         restoreOwnerScroll(this.referenceElement.ownerDocument, scrollX, scrollY);
         documentClone.replaceChild(documentClone.adoptNode(this.documentElement), documentClone.documentElement);
         documentClone.close();
-
         return iframeLoad;
     }
 
@@ -157,9 +179,7 @@ export class DocumentCloner {
 
         const clone = node.cloneNode(false) as T;
         if (isImageElement(clone)) {
-
             if (this.options.adpatQQAvatar) {
-              
             }
 
             if (isImageElement(node) && node.currentSrc && node.currentSrc !== node.src) {
@@ -167,7 +187,7 @@ export class DocumentCloner {
                 clone.srcset = '';
             }
 
-            console.log('src:',clone.src)
+            // console.log('src:',clone.src)
 
             if (clone.loading === 'lazy') {
                 clone.loading = 'eager';
@@ -547,11 +567,14 @@ const iframeLoader = (iframe: HTMLIFrameElement): Promise<HTMLIFrameElement> => 
         }
 
         const documentClone = cloneWindow.document;
-
         cloneWindow.onload = iframe.onload = () => {
             cloneWindow.onload = iframe.onload = null;
             const interval = setInterval(() => {
-                if (documentClone.body.childNodes.length > 0 && documentClone.readyState === 'complete') {
+                if (
+                    documentClone.body &&
+                    documentClone.body.childNodes.length > 0 &&
+                    documentClone.readyState === 'complete'
+                ) {
                     clearInterval(interval);
                     resolve(iframe);
                 }
