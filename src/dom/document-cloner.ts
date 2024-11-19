@@ -43,6 +43,8 @@ export type CloneConfigurations = CloneOptions & {
     inlineImages: boolean;
     copyStyles: boolean;
     adpatQQAvatar: boolean;
+    // 是否缓存克隆的documentElement,注意：在页面结构不变的情况下可以使用，当页面结构改变时，可能会出现非预期结果；
+    cacheDocumentElement: boolean;
 };
 
 const IGNORE_ATTRIBUTE = 'data-html2canvas-ignore';
@@ -78,15 +80,18 @@ export class DocumentCloner {
 
         // 可以缓存clone对象；
         if (typeof elementOrSelector === 'string') {
-            if (!DocumentElementCache) {
-                this.documentElement = this.cloneNode(element.ownerDocument.documentElement, false) as HTMLElement;
-                DocumentElementCache = this.documentElement as HTMLElement;
+            if (options.cacheDocumentElement) {
+                if (!DocumentElementCache) {
+                    this.documentElement = this.cloneNode(element.ownerDocument.documentElement, false) as HTMLElement;
+                    DocumentElementCache = this.documentElement as HTMLElement;
+                } else {
+                    this.documentElement = DocumentElementCache.cloneNode(true) as HTMLElement;
+                }
             } else {
-                this.documentElement = DocumentElementCache.cloneNode(true) as HTMLElement;
+                this.documentElement = this.cloneNode(element.ownerDocument.documentElement, false) as HTMLElement;
             }
             // find clone node;
             this.clonedReferenceElement = this.documentElement.querySelector(elementOrSelector) as HTMLElement;
-            // console.log('this.clonedReferenceElement:', this.clonedReferenceElement);
         } else {
             this.documentElement = this.cloneNode(element.ownerDocument.documentElement, false) as HTMLElement;
         }

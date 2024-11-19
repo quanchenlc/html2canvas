@@ -17,6 +17,7 @@ export type Options = CloneOptions &
         backgroundColor: string | null;
         foreignObjectRendering: boolean;
         removeContainer?: boolean;
+        cacheDocumentElement?: boolean;
     };
 
 const html2canvas = (
@@ -91,9 +92,10 @@ const renderElement = async (
         ignoreElements: opts.ignoreElements,
         inlineImages: foreignObjectRendering,
         copyStyles: foreignObjectRendering,
-        adpatQQAvatar: opts.adpatQQAvatar ?? false
+        adpatQQAvatar: opts.adpatQQAvatar ?? false,
+        cacheDocumentElement: opts.cacheDocumentElement ?? true
     };
-
+    
     context.logger.debug(
         `Starting document clone with size ${windowBounds.width}x${
             windowBounds.height
@@ -112,8 +114,7 @@ const renderElement = async (
     if (!clonedElement) {
         return Promise.reject(`Unable to find element in cloned iframe`);
     }
-    
-    
+
     const container = await documentCloner.toIFrame(ownerDocument, windowBounds);
     const {width, height, left, top} =
         isBodyElement(clonedElement) || isHTMLElement(clonedElement)
