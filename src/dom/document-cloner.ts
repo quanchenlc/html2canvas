@@ -111,7 +111,6 @@ export class DocumentCloner {
 
         const cloneWindow = iframe.contentWindow;
         const documentClone: Document = cloneWindow.document;
-
         /* Chrome doesn't detect relative background-images assigned in inline <style> sheets when fetched through getComputedStyle
          if window url is about:blank, we can assign the url to current by writing onto the document
          */
@@ -133,19 +132,23 @@ export class DocumentCloner {
                     );
                 }
             }
-
             const onclone = this.options.onclone;
-
             const referenceElement = this.clonedReferenceElement;
-
             if (typeof referenceElement === 'undefined') {
                 return Promise.reject(`Error finding the ${this.referenceElement.nodeName} in the cloned document`);
             }
 
+            /**
+             * 等待字体加载完成，在游戏内测试的时候发现，documentClone.fonts.ready then方法没有执行，导致一致处于等待状态；
+             * 因此做出以下优化，判断documentClone.fonts.status非loaded，才进行等待；
+             */
             if (documentClone.fonts && documentClone.fonts.ready) {
-                await documentClone.fonts.ready;
+                if (documentClone.fonts.status !== 'loaded') {
+                    this.context.logger.warn('documentClone.fonts.ready start await');
+                    await documentClone.fonts.ready;
+                    this.context.logger.warn('documentClone.fonts.ready end await');
+                }
             }
-
             if (/(AppleWebKit)/g.test(navigator.userAgent)) {
                 await imagesReady(documentClone);
             }
@@ -155,7 +158,6 @@ export class DocumentCloner {
                     .then(() => onclone(documentClone, referenceElement))
                     .then(() => iframe);
             }
-            // IFrameCache = iframe;
             return iframe;
         });
 

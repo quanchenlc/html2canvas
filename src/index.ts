@@ -105,10 +105,10 @@ const renderElement = async (
             windowBounds.height
         } scrolled to ${-windowBounds.left},${-windowBounds.top}`
     );
-
+    
     const documentCloner = new DocumentCloner(context, elementOrSelector, cloneOptions);
     const clonedElement = documentCloner.clonedReferenceElement;
-
+    
     // adpat qq avatr;
     if (cloneOptions.adpatQQAvatar) {
         const dom = clonedElement?.children[1];
@@ -118,15 +118,15 @@ const renderElement = async (
     if (!clonedElement) {
         return Promise.reject(`Unable to find element in cloned iframe`);
     }
-
+    
     const container = await documentCloner.toIFrame(ownerDocument, windowBounds);
     const {width, height, left, top} =
         isBodyElement(clonedElement) || isHTMLElement(clonedElement)
             ? parseDocumentSize(clonedElement.ownerDocument)
             : parseBounds(context, clonedElement);
-
+    
     const backgroundColor = parseBackgroundColor(context, clonedElement, opts.backgroundColor);
-
+    
     const renderOptions: RenderConfigurations = {
         canvas: opts.canvas,
         backgroundColor,
